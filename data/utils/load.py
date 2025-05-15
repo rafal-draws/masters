@@ -32,11 +32,12 @@ def find_file_by_upload_id(upload_id, upload_dir):
         split = file.split("-")
         if upload_id in split[-1]:
             actual_file=file
+            return f"{upload_dir}{actual_file}"
         else:
-            print("Upload couldn't be found")
-            
-    return f"{upload_dir}{actual_file}"
-
+            pass
+        
+                
+    
 def extract_signal_for_inference(filename_absolute_path):
     y, sr = li.load(filename_absolute_path)
     
