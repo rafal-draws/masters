@@ -6,20 +6,6 @@ import torch.nn as nn
 
 from . import feature_extraction
 
-class MusicModel(nn.Module):
-    def __init__(self):
-        super(MusicModel, self).__init__()
-        self.linear_relu_stack = nn.Sequential(
-        nn.Linear(45000, 512),
-        nn.ReLU(),
-        nn.Linear(512, 5),
-        )
-        
-    def forward(self, x):
-        logits = self.linear_relu_stack(x)
-        
-        return logits
-
     
 def import_data_science(scope):
     #todo add docstring

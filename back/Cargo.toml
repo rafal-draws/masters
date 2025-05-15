@@ -1,0 +1,26 @@
+[package]
+name = "back"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = {version = "0.8.4", features=["multipart"]}
+axum-extra = {version = "0.10.1", features = ["cookie"]}
+serde = {version="1.0", features=["derive"]}
+askama = "0.14"
+tokio = {version="1.0", features=["full"]}
+dotenv = "0.15"
+sqlx = {version = "0.8.1", features = ["sqlite", "runtime-tokio", "chrono"] }
+chrono = {version = "0.4", features = ["serde"]}
+tower-http = {version = "0.5.2", features=["cors"]}
+
+[dependencies.uuid]
+version = "1.16.0"
+features = [
+    "v4",
+    "serde"
+]
+
+
+[dev-dependencies]
+tower = { version = "0.5.2", features=["util"]}
