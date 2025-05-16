@@ -31,11 +31,11 @@ async fn main() -> Result<(), Box<std::io::Error>>{
     .layer(config::create_cors_layers())
     .layer(DefaultBodyLimit::max(250 * 1024 * 1024));
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
     .await
     .unwrap();
 
-    println!("listening on http://127.0.0.1:3000");
+    println!("listening on {:?}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 
     Ok(())

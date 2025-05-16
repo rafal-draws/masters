@@ -11,33 +11,36 @@ pub mod user_http {
     use crate::db::db_conn::{get_user_by_uuid, User};
 
     pub async fn upload_track(
-        mut multipart: Multipart
-    )  {
+        mut multipart: Multipart,
+        jar: CookieJar
+    ) -> String {
 
-    while let Some(field) = multipart.next_field().await.unwrap() {
-        let name = field.name().unwrap().to_string();
-        let file_name = field.file_name().unwrap().to_string();
-        let content_type = field.content_type().unwrap().to_string();
-        let data = field.bytes().await.unwrap();
-
-        let mut file = File::create(format!("{}/{}",
-                                                        env::var("UPLOADS_DIR").unwrap(),
-                                                        file_name))
-                                                        .await.unwrap();
-        let _ = file.write_all(&data);
+        if let Some(uuid) = jar.get("uuid") {
+            let user = get_user_by_uuid(uuid.value().to_string()).await.unwrap();
+            while let Some(field) = multipart.next_field().await.unwrap() {
+                let name = field.name().unwrap().to_string();
+                let file_name = field.file_name().unwrap().to_string();
+                let content_type = field.content_type().unwrap().to_string();
+                let data = field.bytes().await.unwrap();
         
-        // If everything worked save to metadata
-
-
-        println!(
-            "Length of `{name}` (`{file_name}`: `{content_type}`) is {} bytes",
-            data.len()
-        );
-
-
-    }
-
+                let mut file = File::create(format!("{}/{}",
+                                                                env::var("UPLOADS_DIR").unwrap(),
+                                                                file_name))
+                                                                .await.unwrap();
+                let _ = file.write_all(&data);
+            
+            
+            println!("Length of `{name}` (`{file_name}`: `{content_type}`) is {} bytes. \n\n User session: {}, {}",
+                    data.len(),
+                    user.username,
+                    user.uuid
+                )
+            } format!("Upload ready")
+        } else {
+            format!("UUID not found")
+        }
 }
+
 
 
 #[derive(Template)]
@@ -51,7 +54,7 @@ pub struct UserMetadataTemplate {
 pub async fn get_user_data(jar: CookieJar) -> Result<HtmlTemplate<UserMetadataTemplate>, StatusCode> {
 
     if let Some(uuid) = jar.get("uuid") {
-        let user = get_user_by_uuid(uuid.value().to_string()).await;
+        let user = get_user_by_uuid(uuid.value().to_string()).await.expect("Should have a session");
         let template = UserMetadataTemplate {
             username: user.username,
             uuid: user.uuid,

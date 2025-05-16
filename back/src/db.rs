@@ -6,6 +6,11 @@ pub mod db_conn {
     use serde::{Deserialize, Serialize};
     use uuid::Uuid;
 
+    #[derive(Debug)]
+    pub enum AuthError {
+        UUIDError(String)
+    }
+
     #[derive(FromRow, Debug, Serialize)]
     pub struct User {
         pub id: i64,
@@ -83,7 +88,7 @@ pub mod db_conn {
         db
     }
 
-    pub async fn get_user_by_uuid(uuid: String) -> User {
+    pub async fn get_user_by_uuid(uuid: String) -> Result<User, AuthError> {
         sqlx::query_as_unchecked!(
             User,
             "select * from user where uuid = ?",
@@ -91,7 +96,7 @@ pub mod db_conn {
         )
         .fetch_one(&get_pool().await)
         .await
-        .expect("Should be fetchable")
+        .map_err(|_| AuthError::UUIDError(uuid))
     }
 
     pub async fn create_db() {
