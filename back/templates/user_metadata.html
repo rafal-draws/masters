@@ -19,12 +19,27 @@
     <table>
         <thead>
             <tr>
-                <th>song_id</th>
-                <th>added</th>
-                <th>length</th>
-                <th>class</th>
-                <th>delete</th>
+                <th>Upload UUID</th>
+                <th>Added</th>
+                <th>File Name</th>
+                <th>Class</th>
+                <th>Delete</th>
             </tr>
         </thead>
+        <tbody>
+            {% for upload in uploads %}
+            <tr>
+                <td>{{ upload.upload_uuid | e }}</td>
+                <td>{{ upload.added | e }}</td>
+                <td>{{ upload.file_name | e }}</td>
+                <td>—</td>
+                <td>
+                    <form action="/delete/{{ upload.upload_uuid }}" method="post">
+                        <input type="submit" value="Delete">
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 </div>
