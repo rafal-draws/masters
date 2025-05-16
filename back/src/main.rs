@@ -6,12 +6,12 @@ mod http;
 use back::config::{self, create_upload_dir};
 
 use axum::extract::DefaultBodyLimit;
-use db::db_conn::{self, delete_upload};
+use db::db_conn::{self};
 use dotenv::dotenv;
 
 use axum::routing::{get, post};
 use axum::Router;
-use http::user_http::{get_user_data, register_user, upload_track, user_form, user_registered};
+use http::user_http::{delete_upload_http, get_user_data, register_user, upload_track, user_form, user_registered};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<std::io::Error>> {
@@ -44,7 +44,7 @@ fn app() -> Router {
         .route("/register", post(register_user).get(user_registered))
         .route("/profile", get(get_user_data))
         .route("/upload", post(upload_track))
-        .route("/delete/{upload_uuid}", post(delete_upload))
+        .route("/delete/{upload_uuid}", post(delete_upload_http))
 }
 
 #[cfg(test)]

@@ -102,11 +102,20 @@ pub mod user_http {
     pub async fn delete_upload_http(
         Path(upload_uuid): Path<String>,
         jar: CookieJar,
-    ) -> Result<HtmlTemplate<DeleteStatus>, StatusCode> {
+    ) -> impl IntoResponse {
         if let Some(uuid) = jar.get("uuid") {
-            HtmlTemplate(delete_upload(upload_uuid, uuid.value().to_string()).await)
+            let result = delete_upload(upload_uuid.clone(), uuid.value().to_string()).await;
+            HtmlTemplate(result).into_response()
         } else {
-            HtmlTemplate(DeleteStatus { upload_uuid: "", user_uuid: (), status: () })
+            (
+                StatusCode::BAD_REQUEST,
+                HtmlTemplate(DeleteStatus {
+                    upload_uuid: "".to_string(),
+                    user_uuid: "".to_string(),
+                    status: false,
+                }),
+            )
+                .into_response()
         }
     }
 

@@ -1,5 +1,6 @@
 pub mod db_conn {
 
+    use axum_macros::debug_handler;
     use chrono::{Local, NaiveDateTime, Utc};
     use serde::{Deserialize, Serialize};
     use sqlx::{migrate::MigrateDatabase, prelude::FromRow, Pool, Sqlite, SqlitePool};
@@ -153,6 +154,7 @@ pub mod db_conn {
         user_struct
     }
 
+    #[debug_handler]
     pub async fn delete_upload(upload_uuid: String, user_uuid: String) -> DeleteStatus {
         let pool = get_pool().await;
 
@@ -175,11 +177,14 @@ pub mod db_conn {
                     status: true,
                 }
             }
-            Err(e) => DeleteStatus {
+            Err(e) => {
+                tracing::debug!("Couldn't delete a song!");
+                DeleteStatus {
                 upload_uuid: upload_uuid,
                 user_uuid: user_uuid,
                 status: false,
-            },
+            }
+        },
         }
     }
 
