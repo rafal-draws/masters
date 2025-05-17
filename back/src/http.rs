@@ -71,7 +71,7 @@ pub mod user_http {
 
                 let upload = insert_upload_to_db(&user.uuid, &file_name).await;
 
-                tracing::debug!(
+                tracing::info!(
                     "Length of `{name}` (`{}`: `{}`) is {} bytes. \n\n User session: {}, {}",
                     upload.file_name,
                     upload.upload_uuid,
@@ -159,13 +159,12 @@ pub mod user_http {
         println!("extracted: {:?}", &data);
 
         let user = User::new(data.username).await;
-        // create_user(); GENERATE UUID + PERSIST IN DATABASE (id, uuid, username, creation_date)
         let cookie = format!("uuid={}; Path:/; HttpOnly; SameSite=Strict", &user.uuid);
 
         Response::builder()
             .status(StatusCode::FOUND)
             .header(SET_COOKIE, HeaderValue::from_str(&cookie).unwrap())
-            .header(LOCATION, "/register")
+            .header(LOCATION, "/profile")
             .body(axum::body::Body::empty())
             .unwrap()
     }

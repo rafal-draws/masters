@@ -151,6 +151,8 @@ pub mod db_conn {
         .await
         .expect("Insert should exist at this point");
 
+        info!("UPLOAD DATA -> {:?}", &user_struct);
+
         tx.commit().await.expect("Transaction should be closed");
 
         user_struct
@@ -160,6 +162,10 @@ pub mod db_conn {
         let pool = get_pool().await;
 
         let mut tx = pool.begin().await.expect("should create transaction");
+
+        tracing::info!("DELETING UPLOAD REQUEST BEGIN");
+        tracing::info!("user_uuid: {}", &user_uuid);
+        tracing::info!("upload_uuid: {}", &upload_uuid);
 
         let row_delete =
             sqlx::query("DELETE FROM upload where upload_uuid = $1 and user_uuid = $2")
@@ -171,6 +177,7 @@ pub mod db_conn {
 
         match tx.commit().await {
             Ok(a) => {
+                tracing::info!("DELETE REQUEST FULFILLED for {:?}, upload_uuid {:?}", &user_uuid, &upload_uuid);
                 tracing::info!("{:?}, {:?}", a, row_delete);
                 DeleteStatus {
                     upload_uuid: upload_uuid,
@@ -179,6 +186,7 @@ pub mod db_conn {
                 }
             }
             Err(e) => {
+                tracing::info!("DELETE REQUEST COULDN'T BE FULFILLED for {:?}, upload_uuid {:?}", &user_uuid, &upload_uuid);
                 tracing::error!("Couldn't delete a song! {}", e);
                 DeleteStatus {
                 upload_uuid: upload_uuid,
