@@ -2,8 +2,10 @@ extern crate dotenv;
 
 mod db;
 mod http;
+mod ml;
 
 use back::config::{self, create_upload_dir};
+
 
 use axum::extract::DefaultBodyLimit;
 use db::db_conn::{self};
@@ -15,17 +17,33 @@ use http::user_http::{delete_upload_http, get_user_data, register_user, upload_t
 
 #[tokio::main]
 async fn main() -> Result<(), Box<std::io::Error>> {
+
+    let _sub = tracing_subscriber::fmt::init();
+
+    tracing::info!("SETUP - READING .ENV");
     dotenv().ok();
+
+    tracing::info!("SETUP - SETTING DB");
     db_conn::create_db().await;
+
+    tracing::info!("SETUP - CREATING UPLOAD DIR");
     create_upload_dir().await;
 
+    
+
+    tracing::info!("SETUP - CREATING DB_POOL");
     let pool = db_conn::get_pool().await;
 
+    tracing::info!("SETUP - MIGRATION INIT");
     sqlx::migrate!("./migrations")
         .run(&pool)
         .await
         .expect("Migration should be possible");
 
+    tracing::info!("SETUP - MIGRATIONS FINISHED");
+
+
+    tracing::info!("SETUP - STARTING THE SERVER");
     let app = app()
         .layer(config::create_cors_layers())
         .layer(DefaultBodyLimit::max(250 * 1024 * 1024));
@@ -39,6 +57,8 @@ async fn main() -> Result<(), Box<std::io::Error>> {
 }
 
 fn app() -> Router {
+    
+    tracing::info!("SETUP - CREATING ENDPOINTS");
     Router::new()
         .route("/", get(user_form))
         .route("/register", post(register_user).get(user_registered))

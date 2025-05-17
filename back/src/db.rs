@@ -1,19 +1,21 @@
 pub mod db_conn {
 
-    use axum_macros::debug_handler;
     use chrono::{Local, NaiveDateTime, Utc};
     use serde::{Deserialize, Serialize};
     use sqlx::{migrate::MigrateDatabase, prelude::FromRow, Pool, Sqlite, SqlitePool};
+    use tracing::info;
     use std::env;
     use uuid::Uuid;
 
     use crate::http::user_http::DeleteStatus;
-
+    #[allow(dead_code)]
     #[derive(Debug)]
     pub enum AuthError {
         UUIDError(String),
     }
 
+    #[allow(dead_code)]
+    #[derive(Debug)]
     pub enum SqlError {
         UploadQueryError(String),
     }
@@ -116,7 +118,7 @@ pub mod db_conn {
 
         match uploads_vec {
             Ok(v) => {
-                tracing::debug!("{:?}", v);
+                tracing::info!("{:?}", v);
                 Ok(v)
             }
             Err(e) => Err(SqlError::UploadQueryError(format!(
@@ -139,7 +141,7 @@ pub mod db_conn {
         .await
         .expect(&format!("Should insert record for {} {}", user_uuid, file_name));
 
-        println!("Upload added successfully: {:?}", query);
+        info!("UPLOAD INSERTED SUCCESSFULLY: {:?}", query);
 
         let user_struct: Upload = sqlx::query_as::<_, Upload>(
             "SELECT id, user_uuid, upload_uuid, file_name, added from upload where upload_uuid = $1"
@@ -154,7 +156,6 @@ pub mod db_conn {
         user_struct
     }
 
-    #[debug_handler]
     pub async fn delete_upload(upload_uuid: String, user_uuid: String) -> DeleteStatus {
         let pool = get_pool().await;
 
@@ -170,7 +171,7 @@ pub mod db_conn {
 
         match tx.commit().await {
             Ok(a) => {
-                tracing::debug!("{:?}, {:?}", a, row_delete);
+                tracing::info!("{:?}, {:?}", a, row_delete);
                 DeleteStatus {
                     upload_uuid: upload_uuid,
                     user_uuid: user_uuid,
@@ -178,7 +179,7 @@ pub mod db_conn {
                 }
             }
             Err(e) => {
-                tracing::debug!("Couldn't delete a song!");
+                tracing::error!("Couldn't delete a song! {}", e);
                 DeleteStatus {
                 upload_uuid: upload_uuid,
                 user_uuid: user_uuid,
@@ -208,11 +209,11 @@ pub mod db_conn {
         let url = &env::var("DATABASE_URL").expect("DATABASE_URL Should exist at this point");
         if !Sqlite::database_exists(url).await.unwrap_or(false) {
             match Sqlite::create_database(url).await {
-                Ok(_) => println!("database was set up successfully at {}", url),
+                Ok(_) => tracing::info!("database was set up successfully at {}", url),
                 Err(e) => panic!("Error: {}", e),
             }
         } else {
-            println!("Database already exists")
+            info!("DATABASE ALREADY EXISTS")
         }
     }
 }
