@@ -39,7 +39,7 @@ def find_file_by_upload_id(upload_id, upload_dir, logger):
     actual_file = ""
     
     for file in files:
-        logger.info(file)
+        logger.info(files)
         try: 
             if file.startswith(upload_id):
                 actual_file=file
@@ -53,7 +53,7 @@ def extract_signal_for_inference(filename_absolute_path, length, logger):
 
     logger.info(f"{filename_absolute_path} found, extracting init")
     logger.info(os.path.isfile(filename_absolute_path))
-    y, sr = li.load(filename_absolute_path)
+    y, sr = li.load(utilities.normalize_path(filename_absolute_path))
     logger.info(f"{filename_absolute_path} found, extraction completed")
     
 

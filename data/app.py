@@ -29,9 +29,10 @@ def read_root():
 
 @app.post("/transform/check/{file_name}")
 def transform_item(file_name: str):
+    logger.info(file_name)
     try:
         file_found = utilities.normalize_path(
-            transformations.find_file_by_upload_id(file_name, f"{server_data_location}/uploads", logger)
+            transformations.find_file_by_upload_id(file_name, utilities.normalize_path(f"{server_data_location}/uploads"), logger)
             )
 
         if file_found is None:
@@ -53,7 +54,7 @@ def transform_item_step_1(file_path: Annotated[str | None, Header()] = None,
     
 
     try:
-        file_path = utilities.normalize_path(file_path)
+        file_path = file_path
         filename = filename
 
         logger.info(file_path)
@@ -88,9 +89,9 @@ def transform_item_step_1(file_path: Annotated[str | None, Header()] = None,
         
     except HTTPException as e:
         raise e 
-    except Exception as e:
-        logger.error("Unexpected error: %s", e)
-        raise HTTPException(status_code=500, detail="Internal server error")
+    # except Exception as e:
+    #     logger.error("Unexpected error: %s", e)
+    #     raise HTTPException(status_code=500, detail="Internal server error")
     
 
 
