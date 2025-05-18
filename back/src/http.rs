@@ -126,7 +126,7 @@ pub mod user_http {
     #[derive(Template)]
     #[template(path = "track_page.html")]
     pub struct TrackPage {
-        pub upload: Upload
+        pub upload: Upload,
     }
 
     pub async fn get_track_details(
@@ -154,6 +154,16 @@ pub mod user_http {
         }
     }
 
+    #[derive(Template)]
+    #[template(path = "classification_page.html")]
+    pub struct ClassificationPage {
+        pub upload: Upload,
+        pub mel_mp4: String,
+        pub mfcc_mp4: String,
+        pub power_mp4: String,
+        pub sound_location: String,
+        pub signal_np: String,
+    }
 
 
     pub async fn send_to_classification(
@@ -206,20 +216,34 @@ pub mod user_http {
             .await
             .expect("Should be a valid request");
 
-            if artifacts_generation.status().is_success() {
-                
-                tracing::info!("Signal exists and artifacts are generated");
-                
-                let v: Value = serde_json::from_str(&artifacts_generation.text().await.expect("failed to read response body")).expect("valid JSON");
-                tracing::info!("{}", serde_json::to_string_pretty(&v).unwrap());
-            }
 
+            
+            tracing::info!("Signal exists and artifacts are generated");
+            
+            let v: Value = serde_json::from_str(&artifacts_generation.text().await.expect("failed to read response body")).expect("valid JSON");
+            tracing::info!("{}", serde_json::to_string_pretty(&v).unwrap());
+            
+
+
+            // TODO classification result
+            // status print
+            // check - transformation
+            // check - artifacts generation
+            // check - signal ready for inference
+            // check - classification ready 
+            // check results print
 
 
         tracing::debug!("{:?}",upload);
 
-        let template = TrackPage {
-            upload: upload
+        let template = ClassificationPage {
+            upload: upload,
+            power_mp4: v.get("power_mp4").unwrap().to_string().replace('', to),
+            mel_mp4: v.get("mel_mp4").unwrap().to_string(),
+            mfcc_mp4: v.get("mfcc_mp4").unwrap().to_string(),
+            sound_location: v.get("sound_location").unwrap().to_string(),
+            signal_np: v.get("signal").unwrap().to_string(),
+
         };
             
         HtmlTemplate(template).into_response()
@@ -232,6 +256,10 @@ pub mod user_http {
                 .into_response()
         }
     }
+
+
+ 
+
 
 
     #[derive(Template)]
