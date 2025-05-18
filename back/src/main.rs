@@ -13,7 +13,7 @@ use dotenv::dotenv;
 
 use axum::routing::{get, post};
 use axum::Router;
-use http::user_http::{delete_upload_http, get_user_data, register_user, upload_track, user_form, user_registered};
+use http::user_http::{delete_upload_http, get_user_data, register_user, upload_track, user_form, user_registered, get_track_details};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<std::io::Error>> {
@@ -65,6 +65,7 @@ fn app() -> Router {
         .route("/profile", get(get_user_data))
         .route("/upload", post(upload_track))
         .route("/delete/{upload_uuid}", post(delete_upload_http))
+        .route("/track/{upload_uuid}", get(get_track_details))
 }
 
 #[cfg(test)]

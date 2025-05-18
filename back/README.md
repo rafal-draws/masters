@@ -5,4 +5,3 @@
 
 $env:LIBTORCH = "G:\dev\libtorch"
 $env:PATH = "G:\dev\libtorch\lib;" + $env:PATH
-$env:PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1

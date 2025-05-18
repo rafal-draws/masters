@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Upload Details</h1>
+
+<div style="border: 1px solid #ccc; padding: 16px; border-radius: 8px; max-width: 600px;">
+    <p><strong>Upload UUID:</strong> {{ upload.upload_uuid }}</p>
+    <p><strong>User UUID:</strong> {{ upload.user_uuid }}</p>    
+    <p><strong>Upload UUID:</strong> {{ upload.upload_uuid }}</p>
+    <p><strong>User UUID:</strong> {{ upload.user_uuid }}</p>
+
+    <!-- Optional: show extra metadata about the file if you add more fields to TrackPage -->
+</div>
+
+
+
+<a href="/profile" style="display: inline-block; margin-top: 10px;">← Back to Dashboard</a>
+{% endblock %}

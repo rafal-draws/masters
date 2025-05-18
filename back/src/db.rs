@@ -77,6 +77,9 @@ pub mod db_conn {
         }
     }
 
+
+
+
     #[derive(FromRow, Debug, Deserialize, Serialize)]
     pub struct Upload {
         pub id: i64,
@@ -85,6 +88,8 @@ pub mod db_conn {
         pub file_name: String,
         pub added: NaiveDateTime,
     }
+
+
 
     pub fn get_default_upload() -> Vec<Upload> {
         let mut default_vec = Vec::new();
@@ -124,6 +129,32 @@ pub mod db_conn {
             Err(e) => Err(SqlError::UploadQueryError(format!(
                 "Uploads couldn't be fetched. {} \n {}",
                 user_uuid, e
+            ))),
+        }
+    }
+
+
+    pub async fn get_upload(upload_uuid: String) -> Result<Upload, SqlError> {
+        let pool = get_pool().await;
+        let mut tx = pool.begin().await.expect("should create transaction");
+
+        let upload = sqlx::query_as::<_, Upload>(
+            "SELECT id, user_uuid, upload_uuid, file_name, added from upload where upload_uuid = $1"
+        )
+        .bind(&upload_uuid)
+        .fetch_one(&mut *tx)
+        .await;
+
+        tx.commit().await.expect("Transaction should be closed");
+
+        match upload {
+            Ok(v) => {
+                tracing::info!("{:?}", v);
+                Ok(v)
+            }
+            Err(e) => Err(SqlError::UploadQueryError(format!(
+                "Uploads couldn't be fetched. {} \n {} ",
+                upload_uuid, e
             ))),
         }
     }

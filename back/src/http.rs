@@ -17,8 +17,7 @@ pub mod user_http {
     use tokio::{fs::File, io::AsyncWriteExt};
 
     use crate::db::db_conn::{
-        delete_upload, get_all_uploads, get_default_upload, get_user_by_uuid, insert_upload_to_db,
-        Upload, User,
+        delete_upload, get_all_uploads, get_default_upload, get_upload, get_user_by_uuid, insert_upload_to_db, Upload, User
     };
 
     #[derive(Template)]
@@ -118,6 +117,38 @@ pub mod user_http {
                 .into_response()
         }
     }
+
+    #[derive(Template)]
+    #[template(path = "track_page.html")]
+    pub struct TrackPage {
+        pub upload: Upload
+    }
+
+    pub async fn get_track_details(
+        Path(upload_uuid): Path<String>,
+        jar: CookieJar,
+    ) -> impl IntoResponse {
+        if let Some(_uuid) = jar.get("uuid") {
+
+        let upload = get_upload(upload_uuid).await.expect("Upload should exist");
+
+        tracing::debug!("{:?}",upload);
+
+        let template = TrackPage {
+            upload: upload
+        };
+            
+        HtmlTemplate(template).into_response()
+        
+
+        } else {
+            (
+                StatusCode::BAD_REQUEST
+            )
+                .into_response()
+        }
+    }
+
 
     #[derive(Template)]
     #[template(path = "user_metadata.html")]
