@@ -12,6 +12,13 @@ pub fn add(a: i32, b:i32) -> i32 {
 pub async fn classify(
         Path(upload_uuid): Path<String>
     ) -> impl IntoResponse {
+// GET /server_data/transformed_signals/614e96f3-d91b-4734-b3b7-91f7cbc5f764-001018.npy
+// read one frame
+// classify
+// print the class
+
+        
+
     Html(format!(r#"<div class="job-container" hx-target="this" hx-swap="outerHTML">Class: {}</div>"#,upload_uuid))
 }
 

@@ -12,7 +12,6 @@ use axum::extract::DefaultBodyLimit;
 use db::db_conn::{self, drop_all_uploads};
 use dotenv::dotenv;
 
-
 use ml::ml::classify;
 use tokio::time::sleep;
 use tower_http::services::ServeDir;
@@ -28,25 +27,19 @@ use tracing_subscriber::fmt;
 #[tokio::main]
 async fn main() -> Result<(), Box<std::io::Error>> {
     dotenv().ok();
-    
+    let subscriber = fmt().with_line_number(true).with_file(true).finish();
+
+    tracing::subscriber::set_global_default(subscriber).expect("setting tracing default failed");
+
     db_conn::create_db().await;
 
     clear_server_data().await.unwrap();
     tracing::info!("server_data cleared!");
     drop_all_uploads().await.unwrap();
     tracing::info!("uploads in db cleared!");
-    sleep(Duration::from_secs(1 * 60)).await;
-    
-    let subscriber = fmt()
-    .with_line_number(true)
-    .with_file(true)
-    .finish();
-
-    tracing::subscriber::set_global_default(subscriber).expect("setting tracing default failed");
 
     create_server_data_dirs("server_data")?;
     tracing::info!("Directories created");
- 
 
     db_conn::create_db().await;
 
@@ -68,8 +61,6 @@ async fn main() -> Result<(), Box<std::io::Error>> {
     println!("listening on {:?}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 
-     
-
     Ok(())
 }
 
@@ -85,14 +76,10 @@ fn app() -> Router {
         .route(
             "/classification/{upload_uuid}",
             post(send_to_classification),
-        ).route(
-            "/classify/{upload_uuid}",
-            post(classify),
         )
+        .route("/classify/{upload_uuid}", post(classify))
         .nest_service("/server_data", ServeDir::new("server_data"))
 }
-
-
 
 #[cfg(test)]
 mod tests {

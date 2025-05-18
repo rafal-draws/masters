@@ -48,13 +48,16 @@ pub mod config {
     }
 
     pub async fn clear_server_data() -> io::Result<()> {
-    let base_path = Path::new(".server_data");
+    let base_path = Path::new("./server_data");
 
     if base_path.exists() {
+        tracing::info!("base path exists");
         for entry in fs::read_dir(base_path)? {
+            
             let entry = entry?;
             let path = entry.path();
 
+            tracing::info!("{}", &path.display());
             if path.is_dir() {
                 for inner_entry in fs::read_dir(&path)? {
                     let inner_entry = inner_entry?;
