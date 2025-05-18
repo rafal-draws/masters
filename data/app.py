@@ -54,7 +54,7 @@ def transform_item_step_1(file_path: Annotated[str | None, Header()] = None,
     
 
     try:
-        file_path = file_path
+        file_path = "../back/" + file_path
         filename = filename
 
         logger.info(file_path)

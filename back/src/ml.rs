@@ -1,11 +1,22 @@
 
 
 pub mod ml {
+    use axum::{extract::Path, response::{Html, IntoResponse}};
+
 
 
 pub fn add(a: i32, b:i32) -> i32 {
     a + b
 }
+
+pub async fn classify(
+        Path(upload_uuid): Path<String>
+    ) -> impl IntoResponse {
+    Html(format!(r#"<div class="job-container" hx-target="this" hx-swap="outerHTML">Class: {}</div>"#,upload_uuid))
+}
+
+
+
 
     #[cfg(test)]
     mod tests{

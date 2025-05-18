@@ -4,13 +4,18 @@ mod db;
 mod http;
 mod ml;
 
-use std::path::Path;
+use std::time::Duration;
 
-use back::config::{self, create_upload_dir};
+use back::config::{self, clear_server_data, create_server_data_dirs, create_upload_dir};
 
 use axum::extract::DefaultBodyLimit;
-use db::db_conn::{self};
+use db::db_conn::{self, drop_all_uploads};
 use dotenv::dotenv;
+
+
+use ml::ml::classify;
+use tokio::time::sleep;
+use tower_http::services::ServeDir;
 
 use axum::routing::{get, post};
 use axum::Router;
@@ -22,6 +27,15 @@ use tracing_subscriber::fmt;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<std::io::Error>> {
+    dotenv().ok();
+    
+    db_conn::create_db().await;
+
+    clear_server_data().await.unwrap();
+    tracing::info!("server_data cleared!");
+    drop_all_uploads().await.unwrap();
+    tracing::info!("uploads in db cleared!");
+    sleep(Duration::from_secs(1 * 60)).await;
     
     let subscriber = fmt()
     .with_line_number(true)
@@ -32,7 +46,7 @@ async fn main() -> Result<(), Box<std::io::Error>> {
 
     create_server_data_dirs("server_data")?;
     tracing::info!("Directories created");
-    dotenv().ok();
+ 
 
     db_conn::create_db().await;
 
@@ -54,6 +68,8 @@ async fn main() -> Result<(), Box<std::io::Error>> {
     println!("listening on {:?}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 
+     
+
     Ok(())
 }
 
@@ -69,36 +85,14 @@ fn app() -> Router {
         .route(
             "/classification/{upload_uuid}",
             post(send_to_classification),
+        ).route(
+            "/classify/{upload_uuid}",
+            post(classify),
         )
+        .nest_service("/server_data", ServeDir::new("server_data"))
 }
 
 
-
-pub fn create_server_data_dirs(base: &str) -> std::io::Result<()> {
-    let folders = [
-        "", // root .server_data
-        "chroma",
-        "mels",
-        "mfcc",
-        "power",
-        "slices",
-        "transformed_signals",
-        "uploads",
-        "util",
-        "videos",
-    ];
-
-    for folder in &folders {
-        let path = if folder.is_empty() {
-            Path::new(base).to_path_buf()
-        } else {
-            Path::new(base).join(folder)
-        };
-        std::fs::create_dir_all(path)?;
-    }
-
-    Ok(())
-}
 
 #[cfg(test)]
 mod tests {

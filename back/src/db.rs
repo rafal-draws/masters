@@ -133,6 +133,30 @@ pub mod db_conn {
         }
     }
 
+     pub async fn drop_all_uploads() -> Result<(), SqlError> {
+        let pool = get_pool().await;
+        let mut tx = pool.begin().await.expect("should create transaction");
+
+        let uploads_vec = sqlx::query(
+            "DELETE FROM upload"
+        )
+        .execute(&mut *tx)
+        .await;
+
+        tx.commit().await.expect("Transaction should be closed");
+
+        match uploads_vec {
+            Ok(v) => {
+                tracing::info!("Deleted {} rows from upload table", v.rows_affected());
+            Ok(())
+            }
+            Err(e) => Err(SqlError::UploadQueryError(format!(
+                "Uploads couldn't be removed. {} \n",
+                e
+            ))),
+        }
+    }
+
 
     pub async fn get_upload(upload_uuid: String) -> Result<Upload, SqlError> {
         let pool = get_pool().await;

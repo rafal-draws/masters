@@ -246,11 +246,11 @@ pub mod user_http {
 
         let template = ClassificationPage {
             upload: upload,
-            power_mp4: v.get("power_mp4").unwrap().to_string().replace('"', ""),
-            mel_mp4: v.get("mel_mp4").unwrap().to_string().replace('"', ""),
-            mfcc_mp4: v.get("mfcc_mp4").unwrap().to_string().replace('"', ""),
-            sound_location: v.get("sound_location").unwrap().to_string().replace('"', ""),
-            signal_np: v.get("signal").unwrap().to_string().replace('"', ""),
+            power_mp4: v.get("power_mp4").unwrap().to_string().replace('"', "").replace("../back", ""),
+            mel_mp4: v.get("mel_mp4").unwrap().to_string().replace('"', "").replace("../back", ""),
+            mfcc_mp4: v.get("mfcc_mp4").unwrap().to_string().replace('"', "").replace("../back", ""),
+            sound_location: v.get("sound_location").unwrap().to_string().replace('"', "").replace("\\\\", "/").replace("../back", ""),
+            signal_np: v.get("signal").unwrap().to_string().replace('"', "").replace("\\\\", "/").replace("../back", ""),
 
         };
             
