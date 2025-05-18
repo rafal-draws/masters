@@ -15,7 +15,7 @@ load_dotenv()
 if platform.system() == "Linux":
     server_data_location = os.getenv("SERVER_DATA")
 else:
-    server_data_location = "G:\\server_data"
+    server_data_location = "../back/server_data"
 
 app = FastAPI(title=os.getenv("APP_NAME"))
 logger = utilities.setup_logging(True)

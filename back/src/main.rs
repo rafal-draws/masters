@@ -4,6 +4,8 @@ mod db;
 mod http;
 mod ml;
 
+use std::path::Path;
+
 use back::config::{self, create_upload_dir};
 
 use axum::extract::DefaultBodyLimit;
@@ -20,7 +22,7 @@ use tracing_subscriber::fmt;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<std::io::Error>> {
-
+    
     let subscriber = fmt()
     .with_line_number(true)
     .with_file(true)
@@ -28,6 +30,8 @@ async fn main() -> Result<(), Box<std::io::Error>> {
 
     tracing::subscriber::set_global_default(subscriber).expect("setting tracing default failed");
 
+    create_server_data_dirs("server_data")?;
+    tracing::info!("Directories created");
     dotenv().ok();
 
     db_conn::create_db().await;
@@ -66,6 +70,34 @@ fn app() -> Router {
             "/classification/{upload_uuid}",
             post(send_to_classification),
         )
+}
+
+
+
+pub fn create_server_data_dirs(base: &str) -> std::io::Result<()> {
+    let folders = [
+        "", // root .server_data
+        "chroma",
+        "mels",
+        "mfcc",
+        "power",
+        "slices",
+        "transformed_signals",
+        "uploads",
+        "util",
+        "videos",
+    ];
+
+    for folder in &folders {
+        let path = if folder.is_empty() {
+            Path::new(base).to_path_buf()
+        } else {
+            Path::new(base).join(folder)
+        };
+        std::fs::create_dir_all(path)?;
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

@@ -21,6 +21,7 @@ pub mod user_http {
         delete_upload, get_all_uploads, get_default_upload, get_upload, get_user_by_uuid, insert_upload_to_db, Upload, User
     };
 
+
     #[derive(Template)]
     #[template(path = "upload_successful.html")]
     pub struct UploadTemplate {
@@ -60,7 +61,14 @@ pub mod user_http {
                 let data = field.bytes().await.unwrap();
 
                 let upload = insert_upload_to_db(&user.uuid, &file_name).await;
-
+                tracing::info!("UPLOADING");
+                tracing::info!("{}", format!(
+                    "{}/{}-{}",
+                    env::var("UPLOADS_DIR").unwrap(),
+                    upload.upload_uuid,
+                    file_name,
+                )
+            );
                 let mut file = File::create(format!(
                     "{}/{}-{}",
                     env::var("UPLOADS_DIR").unwrap(),
@@ -238,11 +246,11 @@ pub mod user_http {
 
         let template = ClassificationPage {
             upload: upload,
-            power_mp4: v.get("power_mp4").unwrap().to_string().replace('', to),
-            mel_mp4: v.get("mel_mp4").unwrap().to_string(),
-            mfcc_mp4: v.get("mfcc_mp4").unwrap().to_string(),
-            sound_location: v.get("sound_location").unwrap().to_string(),
-            signal_np: v.get("signal").unwrap().to_string(),
+            power_mp4: v.get("power_mp4").unwrap().to_string().replace('"', ""),
+            mel_mp4: v.get("mel_mp4").unwrap().to_string().replace('"', ""),
+            mfcc_mp4: v.get("mfcc_mp4").unwrap().to_string().replace('"', ""),
+            sound_location: v.get("sound_location").unwrap().to_string().replace('"', ""),
+            signal_np: v.get("signal").unwrap().to_string().replace('"', ""),
 
         };
             
