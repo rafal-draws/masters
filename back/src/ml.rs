@@ -9,6 +9,30 @@ pub fn add(a: i32, b:i32) -> i32 {
     a + b
 }
 
+
+pub fn load_signal(path: String) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
+    let bytes = std::fs::read("./util/test_signal.npy")?;
+
+    let npy = npyz::NpyFile::new(&bytes[..])?;
+
+    let mut signal: Vec<f32> = Vec::new();
+
+    for number in npy.data::<f32>()? {
+        let number = number?;
+        signal.push(number);
+    }
+
+    Ok(signal)
+
+}
+
+#[test]
+fn test_load_signal() {
+    let signal = load_signal("./util/test_signal.npy".to_string()).expect("should work");
+
+    assert_eq!(signal.len(), 308700)
+}
+
 pub async fn classify(
         Path(upload_uuid): Path<String>
     ) -> impl IntoResponse {
