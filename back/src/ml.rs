@@ -1,10 +1,12 @@
 pub mod ml {
-    use std::{collections::HashMap, env};
+    use std::{collections::HashMap, env, path::PathBuf};
 
+    use askama::Template;
     use axum::{
         extract::Path,
         response::{Html, IntoResponse},
     };
+    use serde::{Deserialize, Serialize};
     use tch::{CModule, Kind, Tensor};
 
     pub fn add(a: i32, b: i32) -> i32 {
@@ -20,7 +22,6 @@ pub mod ml {
         let model_location = "./util".to_string();
         let model_name = "jit_cpu_latest.pt".to_string();
 
-        let paths = std::fs::read_dir(format!("{}", model_location)).unwrap();
 
         tracing::info!("MODEL FOUND - {}\\{}", model_location, model_name);
         println!("MODEL FOUND - {}\\{}", &model_location, &model_name);
@@ -30,6 +31,9 @@ pub mod ml {
 
         model
     }
+
+
+
 
     pub fn load_signal(path: String) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
         println!("{:?}", &path);
@@ -63,14 +67,21 @@ pub mod ml {
         tensors
     }
 
+    #[derive(Debug, Serialize, Deserialize)]
+    pub struct FrameClassification {
+        logits: Vec<f32>,
+        propabilities: Vec<f32>,
+        class: usize,
+        biggest_propability: f32
+    }
 
 
-    pub fn classify_signal(model: CModule, path: String) {
+    pub fn classify_signal(model: CModule, path: String) -> HashMap<usize, FrameClassification> {
         let signal = load_signal(path).expect("Should be valid signal");
 
         let tensors = signal_to_tensors(&signal);
 
-        let mut results = HashMap::new();
+        let mut results: HashMap<usize, FrameClassification> = HashMap::new();
 
         for (index, frame) in tensors.iter().enumerate() {
             let logits = model.forward_ts(&[frame]).expect("Should produce output"); // Tensor [1,5]
@@ -103,14 +114,19 @@ pub mod ml {
 
             println!("max_index: {}, max_value: {}", max_index, max_value);
 
-            results.insert(index, values);
-            
-        } // RETURNS INDEX: Vec<f32> of 5 classification results
-    
-        
-                
+            let classification_result = FrameClassification {
+                logits: values,
+                propabilities: probs_vec,
+                class: max_index,
+                biggest_propability: max_value
+            };
 
-        // let input = Tensor::randn(&[1, 1, 22050], (tch::Kind::Float, tch::Device::Cpu));
+            results.insert(index, classification_result);
+            
+        } 
+    
+        results
+                
     }
 
     #[test]
@@ -127,15 +143,40 @@ pub mod ml {
         assert_eq!(signal.len(), 308700)
     }
 
+
+    // #[derive(Template)]
+    // #[template(path = "classification_results.html")]
+    // pub struct ClassificationResultsTemplate {
+    //     classifications: Vec<FrameClassification>
+    // }
+
     pub async fn classify(Path(upload_uuid): Path<String>) -> impl IntoResponse {
         // GET /server_data/transformed_signals/614e96f3-d91b-4734-b3b7-91f7cbc5f764-001018.npy
+
+
+        let model = load_model();
+
+        tracing::info!("searching for signal in: {}", format!("{}{}/{}.npy", 
+        env::var("SERVER_DATA").expect("SERVER_DATA should be reachable"),
+         "transformed_signals",
+        upload_uuid));
+
+        let classifications = classify_signal(model, 
+        format!("{}{}/{}.npy", 
+        env::var("SERVER_DATA").expect("SERVER_DATA should be reachable"),
+         "transformed_signals",
+        upload_uuid));
+
         // read one frame
         // classify
         // print the class
 
+
+
+
         Html(format!(
-            r#"<div class="job-container" hx-target="this" hx-swap="outerHTML">Class: {}</div>"#,
-            upload_uuid
+            r#"<div class="job-container" hx-target="this" hx-swap="outerHTML">Class: {:?}</div>"#,
+            classifications
         ))
     }
 
@@ -147,12 +188,10 @@ pub mod ml {
         use tch::{CModule, Tensor};
 
         use super::*;
-        fn test_file_load() {
-            assert!(true)
-        }
+
 
         #[test]
-        fn test() {
+        fn test_libtorch_works() {
             use dotenv::dotenv;
             dotenv().ok();
 

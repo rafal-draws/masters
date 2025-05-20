@@ -4,7 +4,6 @@ mod db;
 mod http;
 mod ml;
 
-use std::time::Duration;
 
 use back::config::{self, clear_server_data, create_server_data_dirs, create_upload_dir};
 
@@ -13,7 +12,6 @@ use db::db_conn::{self, drop_all_uploads};
 use dotenv::dotenv;
 
 use ml::ml::classify;
-use tokio::time::sleep;
 use tower_http::services::ServeDir;
 
 use axum::routing::{get, post};
