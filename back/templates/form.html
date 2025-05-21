@@ -1,11 +1,26 @@
 {% extends "base.html" %}
 
-{% block content %}
-<h1>Register yourself!</h1>
-<form action="/register" method="post">
-    <input placeholder="Your name..." required type="text" name="username">
-    <button type="submit">Register
-    </button>
+{% block title %}
+Registration
+{% endblock %}
 
-</form>
+{% block content %}
+<section class="register-section">
+    <div class="register-container">
+        <h2>Register yourself!</h2>
+        <form action="/register" method="post" class="register-form">
+            <div class="form-group">
+                <label for="username">Your name</label>
+                <input
+                    id="username"
+                    placeholder="Your name..."
+                    required
+                    type="text"
+                    name="username"
+                />
+            </div>
+            <button type="submit" class="submit-btn">Register</button>
+        </form>
+    </div>
+</section>
 {% endblock %}

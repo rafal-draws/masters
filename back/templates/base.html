@@ -1,16 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <script src="https://unpkg.com/htmx.org@2.0.4" 
-    integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" 
-    crossorigin="anonymous"></script>
-    <!-- <link rel="stylesheet" href="/styles.css"/> -->
-    <title>Index</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"
+        integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+        crossorigin="anonymous"></script>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg" />
+    <title>miml | {% block title %} placeholder title {% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/stylesheet.css" />
     {% block head %}{% endblock %}
 </head>
-    <body>
-        <div id="content">
-            {% block content %}<p>Placeholder content</p>{% endblock %}
+
+<body>
+    <header class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <a href="/" class="logo-link">
+                    <img class="logo" src="/static/logo.png" alt="logo">
+                    <span class="logo-text">mlim</span>
+                </a>
+            </div>
+
+            <nav class="navbar-menu">
+                <label for="menu-toggle" class="navbar-toggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </label>
+
+                <ul class="navbar-links">
+                    <li><label for="register-toggle" class="register-btn">Register</label></li>
+                    <li><a href="/user_terms">Terms</a></li>
+                    <li><a href="https://www.linkedin.com/in/rafa%C5%82-draws-a49b0b1a9/">Contact</a></li>
+                </ul>
+            </nav>
         </div>
-    </body>
+    </header>
+    <div id="content">
+        {% block content %}<p>Placeholder content</p>{% endblock %}
+    </div>
+</body>
+
 </html>

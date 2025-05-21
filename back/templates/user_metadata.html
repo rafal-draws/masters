@@ -1,23 +1,25 @@
-<div id="user-metadata">
-    <h3>user: {{ username }} </h3>
-    <h3>uuid: {{ uuid }}</h3>
-    <h3>created at: {{ created_at }}</h3>
+{% extends "base.html" %}
 
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <div>
-            <label>
-                Upload file:
-                <input type="file" name="file" multiple>
+{% block content %}
+
+<div id="user-metadata" class="user-metadata">
+    <h3 class="user-metadata__greeting">Hey {{ username }}!</h3>
+    
+    <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+        <div class="upload-form__group">
+            <label class="upload-form__label">
+                Upload your tune!:
+                <input type="file" name="file" multiple class="upload-form__file-input">
             </label>
         </div>
 
-        <div>
-            <input type="submit" value="Upload files">
+        <div class="upload-form__group">
+            <input type="submit" value="Upload files" class="upload-form__submit-btn">
         </div>
     </form>
 
-    <table>
-        <thead>
+    <table class="uploads-table">
+        <thead class="uploads-table__head">
             <tr>
                 <th>Upload UUID</th>
                 <th>Added</th>
@@ -27,23 +29,25 @@
                 <th>Send to classification</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="uploads-table__body">
             {% for upload in uploads %}
             <tr>
                 <td>{{ upload.upload_uuid | e }}</td>
                 <td>{{ upload.added | e }}</td>
                 <td>{{ upload.file_name | e }}</td>
-                <td><a href="/track/{{ upload.upload_uuid }}">
-                        <button type="button">Go to Track</button>
-                    </a></td>
                 <td>
-                    <form action="/delete/{{ upload.upload_uuid }}" method="post">
-                        <input type="submit" value="Delete">
+                    <a href="/track/{{ upload.upload_uuid }}">
+                        <button type="button" class="btn">Go to Track</button>
+                    </a>
+                </td>
+                <td>
+                    <form action="/delete/{{ upload.upload_uuid }}" method="post" class="delete-form">
+                        <input type="submit" value="Delete" class="btn btn--danger">
                     </form>
                 </td>
                 <td>
-                    <form action="/classification/{{ upload.upload_uuid }}" method="post">
-                        <input type="submit" value="Post">
+                    <form action="/classification/{{ upload.upload_uuid }}" method="post" class="classify-form">
+                        <input type="submit" value="Post" class="btn btn--primary">
                     </form>
                 </td>
             </tr>
@@ -51,3 +55,5 @@
         </tbody>
     </table>
 </div>
+
+{% endblock %}

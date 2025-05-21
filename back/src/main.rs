@@ -77,6 +77,7 @@ fn app() -> Router {
         )
         .route("/classify/{signal}", post(classify))
         .nest_service("/server_data", ServeDir::new("server_data"))
+        .nest_service("/static", ServeDir::new("static"))
 }
 
 #[cfg(test)]
