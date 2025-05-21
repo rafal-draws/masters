@@ -9,8 +9,8 @@ pub mod config {
 
         let _upload_dir = match tokio::fs::create_dir_all(&dir).await {
             Ok(_) => Ok(()),
-            Err(e) if e.kind() == ErrorKind::AlreadyExists => Ok(()), // Silently ignore
-            Err(e) => Err(Box::new(e)),                               // Pass up other errors
+            Err(e) if e.kind() == ErrorKind::AlreadyExists => Ok(()),
+            Err(e) => Err(Box::new(e)),
         }
         .expect("Should create directory");
     }

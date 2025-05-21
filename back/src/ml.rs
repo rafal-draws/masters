@@ -9,6 +9,8 @@ pub mod ml {
     use serde::{Deserialize, Serialize};
     use tch::{CModule, Kind, Tensor};
 
+    use crate::db::db_conn::get_upload;
+
     pub fn add(a: i32, b: i32) -> i32 {
         a + b
     }
@@ -22,7 +24,6 @@ pub mod ml {
         let model_location = "./util".to_string();
         let model_name = "jit_cpu_latest.pt".to_string();
 
-
         tracing::info!("MODEL FOUND - {}\\{}", model_location, model_name);
         println!("MODEL FOUND - {}\\{}", &model_location, &model_name);
 
@@ -32,12 +33,15 @@ pub mod ml {
         model
     }
 
+    pub async fn load_signal(signal_path: String) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
+    
+        tracing::info!(
+            "load_signal fun - looking at {}", &signal_path
+        );
 
+        let dir = std::fs::read_dir(&signal_path);
 
-
-    pub fn load_signal(path: String) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
-        println!("{:?}", &path);
-        let bytes = std::fs::read(path)?;
+        let bytes = std::fs::read(signal_path)?;
 
         let npy = npyz::NpyFile::new(&bytes[..])?;
 
@@ -58,10 +62,10 @@ pub mod ml {
         for chunk in signal.chunks(frame_size) {
             if chunk.len() == frame_size {
                 let tensor = Tensor::from_slice(chunk)
-                .reshape(&[1, 1, frame_size as i64])
-                .to_kind(Kind::Float)
-                .to_device(tch::Device::Cpu);
-            tensors.push(tensor);
+                    .reshape(&[1, 1, frame_size as i64])
+                    .to_kind(Kind::Float)
+                    .to_device(tch::Device::Cpu);
+                tensors.push(tensor);
             }
         }
         tensors
@@ -72,12 +76,12 @@ pub mod ml {
         logits: Vec<f32>,
         propabilities: Vec<f32>,
         class: usize,
-        biggest_propability: f32
+        biggest_propability: f32,
     }
 
+    pub async fn classify_signal(model: CModule, path: String) -> HashMap<usize, FrameClassification> {
 
-    pub fn classify_signal(model: CModule, path: String) -> HashMap<usize, FrameClassification> {
-        let signal = load_signal(path).expect("Should be valid signal");
+        let signal = load_signal(path).await.expect("Should be valid signal");
 
         let tensors = signal_to_tensors(&signal);
 
@@ -86,31 +90,28 @@ pub mod ml {
         for (index, frame) in tensors.iter().enumerate() {
             let logits = model.forward_ts(&[frame]).expect("Should produce output"); // Tensor [1,5]
             let probs = logits.softmax(1, tch::Kind::Float);
-            
+
             let probs_vec: Vec<f32> = probs
-            .shallow_clone()
-            .view([-1])
-            .try_into()
-            .expect("Should be valid logits into propabilities"); 
+                .shallow_clone()
+                .view([-1])
+                .try_into()
+                .expect("Should be valid logits into propabilities");
             println!("Propabilities {:?}", probs_vec);
-            
-            let values: Vec<f32> = logits
-            .shallow_clone()
-            .view([-1])
-            .try_into()
-            .unwrap();
+
+            let values: Vec<f32> = logits.shallow_clone().view([-1]).try_into().unwrap();
             println!("{:?}", &values);
 
-            let (max_index, max_value) = values
-            .iter()
-            .enumerate()
-            .fold((0, f32::MIN), |(max_i, max_v), (i, &v)| {
-                if v > max_v {
-                    (i, v)
-                } else {
-                    (max_i, max_v)
-                }
-            });
+            let (max_index, max_value) =
+                values
+                    .iter()
+                    .enumerate()
+                    .fold((0, f32::MIN), |(max_i, max_v), (i, &v)| {
+                        if v > max_v {
+                            (i, v)
+                        } else {
+                            (max_i, max_v)
+                        }
+                    });
 
             println!("max_index: {}, max_value: {}", max_index, max_value);
 
@@ -118,31 +119,28 @@ pub mod ml {
                 logits: values,
                 propabilities: probs_vec,
                 class: max_index,
-                biggest_propability: max_value
+                biggest_propability: max_value,
             };
 
             results.insert(index, classification_result);
-            
-        } 
-    
+        }
+
         results
-                
     }
 
-    #[test]
-    fn test_classify_signal() {
-        classify_signal(load_model(), "./util/test_signal.npy".to_string());
+    #[tokio::test]
+    async fn test_classify_signal() {
+        classify_signal(load_model(), "./util/test_signal.npy".to_string()).await;
 
         assert!(true)
     }
 
-    #[test]
-    fn test_load_signal() {
-        let signal = load_signal("./util/test_signal.npy".to_string()).expect("should work");
+    #[tokio::test]
+    async fn test_load_signal() {
+        let signal = load_signal("./util/test_signal.npy".to_string()).await.expect("should work");
 
         assert_eq!(signal.len(), 308700)
     }
-
 
     // #[derive(Template)]
     // #[template(path = "classification_results.html")]
@@ -150,29 +148,34 @@ pub mod ml {
     //     classifications: Vec<FrameClassification>
     // }
 
-    pub async fn classify(Path(upload_uuid): Path<String>) -> impl IntoResponse {
+    pub async fn classify(Path(signal): Path<String>) -> impl IntoResponse {
         // GET /server_data/transformed_signals/614e96f3-d91b-4734-b3b7-91f7cbc5f764-001018.npy
-
 
         let model = load_model();
 
-        tracing::info!("searching for signal in: {}", format!("{}{}/{}.npy", 
-        env::var("SERVER_DATA").expect("SERVER_DATA should be reachable"),
-         "transformed_signals",
-        upload_uuid));
+        tracing::info!(
+            "searching for signal in: {}",
+            format!(
+                "{}{}/{}",
+                env::var("SERVER_DATA").expect("SERVER_DATA should be reachable"),
+                "transformed_signals",
+                &signal
+            )
+        );
 
-        let classifications = classify_signal(model, 
-        format!("{}{}/{}.npy", 
-        env::var("SERVER_DATA").expect("SERVER_DATA should be reachable"),
-         "transformed_signals",
-        upload_uuid));
+        let classifications = classify_signal(
+            model,
+            format!(
+                "{}{}/{}",
+                env::var("SERVER_DATA").expect("SERVER_DATA should be reachable"),
+                "transformed_signals",
+                signal
+            ),
+        ).await;
 
         // read one frame
         // classify
         // print the class
-
-
-
 
         Html(format!(
             r#"<div class="job-container" hx-target="this" hx-swap="outerHTML">Class: {:?}</div>"#,
@@ -188,7 +191,6 @@ pub mod ml {
         use tch::{CModule, Tensor};
 
         use super::*;
-
 
         #[test]
         fn test_libtorch_works() {

@@ -18,9 +18,9 @@ pub mod user_http {
     use tokio::{fs::File, io::AsyncWriteExt};
 
     use crate::db::db_conn::{
-        delete_upload, get_all_uploads, get_default_upload, get_upload, get_user_by_uuid, insert_upload_to_db, Upload, User
+        delete_upload, get_all_uploads, get_default_upload, get_upload, get_user_by_uuid,
+        insert_upload_to_db, Upload, User,
     };
-
 
     #[derive(Template)]
     #[template(path = "upload_successful.html")]
@@ -62,13 +62,15 @@ pub mod user_http {
 
                 let upload = insert_upload_to_db(&user.uuid, &file_name).await;
                 tracing::info!("UPLOADING");
-                tracing::info!("{}", format!(
-                    "{}/{}-{}",
-                    env::var("UPLOADS_DIR").unwrap(),
-                    upload.upload_uuid,
-                    file_name,
-                )
-            );
+                tracing::info!(
+                    "{}",
+                    format!(
+                        "{}/{}-{}",
+                        env::var("UPLOADS_DIR").unwrap(),
+                        upload.upload_uuid,
+                        file_name,
+                    )
+                );
                 let mut file = File::create(format!(
                     "{}/{}-{}",
                     env::var("UPLOADS_DIR").unwrap(),
@@ -77,10 +79,8 @@ pub mod user_http {
                 ))
                 .await
                 .unwrap();
-            
-                let _ = file.write_all(&data).await.unwrap();
-                
 
+                let _ = file.write_all(&data).await.unwrap();
 
                 tracing::info!(
                     "Length of `{name}` (`{}`: `{}`) is {} bytes. \n\n User session: {}, {}",
@@ -90,7 +90,6 @@ pub mod user_http {
                     user.username,
                     upload.user_uuid
                 );
-
 
                 template.bytes = data.len();
                 template.title = upload.file_name;
@@ -142,23 +141,15 @@ pub mod user_http {
         jar: CookieJar,
     ) -> impl IntoResponse {
         if let Some(_uuid) = jar.get("uuid") {
+            let upload = get_upload(upload_uuid).await.expect("Upload should exist");
 
-        let upload = get_upload(upload_uuid).await.expect("Upload should exist");
+            tracing::debug!("{:?}", upload);
 
-        tracing::debug!("{:?}",upload);
+            let template = TrackPage { upload: upload };
 
-        let template = TrackPage {
-            upload: upload
-        };
-            
-        HtmlTemplate(template).into_response()
-        
-
+            HtmlTemplate(template).into_response()
         } else {
-            (
-                StatusCode::BAD_REQUEST
-            )
-                .into_response()
+            (StatusCode::BAD_REQUEST).into_response()
         }
     }
 
@@ -173,102 +164,148 @@ pub mod user_http {
         pub signal_np: String,
     }
 
-
     pub async fn send_to_classification(
         Path(upload_uuid): Path<String>,
         jar: CookieJar,
     ) -> impl IntoResponse {
         if let Some(_uuid) = jar.get("uuid") {
-
             let client = reqwest::Client::new();
-            
+
             let upload = get_upload(upload_uuid).await.expect("Upload should exist");
 
-            let file_exists_check = client.post(format!("http://127.0.0.1:8000/transform/check/{}-{}",
-             upload.upload_uuid,
-             upload.file_name))
-             .body("")
-             .send()
-             .await
-             .expect("Transformation API should be reachable");
+            let file_exists_check = client
+                .post(format!(
+                    "http://127.0.0.1:8000/transform/check/{}-{}",
+                    upload.upload_uuid, upload.file_name
+                ))
+                .body("")
+                .send()
+                .await
+                .expect("Transformation API should be reachable");
 
-             if file_exists_check.status().is_success() {
-                
+            if file_exists_check.status().is_success() {
                 tracing::info!("FILE EXISTS");
-                tracing::info!("{:?}", file_exists_check.text().await.expect("failed to read response body"));
+                tracing::info!(
+                    "{:?}",
+                    file_exists_check
+                        .text()
+                        .await
+                        .expect("failed to read response body")
+                );
             }
 
-            let signal_and_sound_generation_check = client.post("http://127.0.0.1:8000/transform/step_1")
-             .body("")
-             .header("file-path", format!("{}/{}-{}", env::var("UPLOADS_DIR").unwrap(), &upload.upload_uuid, &upload.file_name))
-             .header("filename", format!("{}-{}", &upload.upload_uuid, &upload.file_name))
-             .send()
-             .await
-             .expect("Transformation API should be reachable");
+            let signal_and_sound_generation_check = client
+                .post("http://127.0.0.1:8000/transform/step_1")
+                .body("")
+                .header(
+                    "file-path",
+                    format!(
+                        "{}/{}-{}",
+                        env::var("UPLOADS_DIR").unwrap(),
+                        &upload.upload_uuid,
+                        &upload.file_name
+                    ),
+                )
+                .header(
+                    "filename",
+                    format!("{}-{}", &upload.upload_uuid, &upload.file_name),
+                )
+                .send()
+                .await
+                .expect("Transformation API should be reachable");
 
-            
             tracing::info!("FILE EXISTS and signal is generated");
-            
-            let v: Value = serde_json::from_str(&signal_and_sound_generation_check.text().await.expect("failed to read response body")).expect("valid JSON");
+
+            let v: Value = serde_json::from_str(
+                &signal_and_sound_generation_check
+                    .text()
+                    .await
+                    .expect("failed to read response body"),
+            )
+            .expect("valid JSON");
             tracing::info!("{}", serde_json::to_string_pretty(&v).unwrap());
-            
-    
-            let artifacts_generation = client.post("http://127.0.0.1:8000/transform/step_2")
-            .body("")
-            .header("sound-location", v.get("sound_location").unwrap().as_str().unwrap())
-            .header("signal", v.get("signal").unwrap().as_str().unwrap())
-            .header("frame-size", "4096")
-            .header("hop-size", "512")
-            .header("filename", v.get("filename").unwrap().as_str().unwrap())
-            .send()
-            .await
-            .expect("Should be a valid request");
 
+            let artifacts_generation = client
+                .post("http://127.0.0.1:8000/transform/step_2")
+                .body("")
+                .header(
+                    "sound-location",
+                    v.get("sound_location").unwrap().as_str().unwrap(),
+                )
+                .header("signal", v.get("signal").unwrap().as_str().unwrap())
+                .header("frame-size", "4096")
+                .header("hop-size", "512")
+                .header("filename", v.get("filename").unwrap().as_str().unwrap())
+                .send()
+                .await
+                .expect("Should be a valid request");
 
-            
             tracing::info!("Signal exists and artifacts are generated");
-            
-            let v: Value = serde_json::from_str(&artifacts_generation.text().await.expect("failed to read response body")).expect("valid JSON");
-            tracing::info!("{}", serde_json::to_string_pretty(&v).unwrap());
-            
 
+            let v: Value = serde_json::from_str(
+                &artifacts_generation
+                    .text()
+                    .await
+                    .expect("failed to read response body"),
+            )
+            .expect("valid JSON");
+            tracing::info!("{}", serde_json::to_string_pretty(&v).unwrap());
 
             // TODO classification result
             // status print
             // check - transformation
             // check - artifacts generation
             // check - signal ready for inference
-            // check - classification ready 
+            // check - classification ready
             // check results print
 
+            tracing::debug!("{:?}", upload);
 
-        tracing::debug!("{:?}",upload);
+            let template = ClassificationPage {
+                upload: upload,
+                power_mp4: v
+                    .get("power_mp4")
+                    .unwrap()
+                    .to_string()
+                    .replace('"', "")
+                    .replace("../back", ""),
+                mel_mp4: v
+                    .get("mel_mp4")
+                    .unwrap()
+                    .to_string()
+                    .replace('"', "")
+                    .replace("../back", ""),
+                mfcc_mp4: v
+                    .get("mfcc_mp4")
+                    .unwrap()
+                    .to_string()
+                    .replace('"', "")
+                    .replace("../back", ""),
+                sound_location: v
+                    .get("sound_location")
+                    .unwrap()
+                    .to_string()
+                    .replace('"', "")
+                    .replace("\\\\", "/")
+                    .replace("../back", ""),
+                signal_np: v
+                    .get("signal")
+                    .unwrap()
+                    .to_string()
+                    .replace('"', "")
+                    .replace("\\\\", "/")
+                    .replace("../back", "")
+                    .split("/")
+                    .last()
+                    .expect("Should be string")
+                    .to_string(),
+            };
 
-        let template = ClassificationPage {
-            upload: upload,
-            power_mp4: v.get("power_mp4").unwrap().to_string().replace('"', "").replace("../back", ""),
-            mel_mp4: v.get("mel_mp4").unwrap().to_string().replace('"', "").replace("../back", ""),
-            mfcc_mp4: v.get("mfcc_mp4").unwrap().to_string().replace('"', "").replace("../back", ""),
-            sound_location: v.get("sound_location").unwrap().to_string().replace('"', "").replace("\\\\", "/").replace("../back", ""),
-            signal_np: v.get("signal").unwrap().to_string().replace('"', "").replace("\\\\", "/").replace("../back", ""),
-
-        };
-            
-        HtmlTemplate(template).into_response()
-        
-
+            HtmlTemplate(template).into_response()
         } else {
-            (
-                StatusCode::BAD_REQUEST
-            )
-                .into_response()
+            (StatusCode::BAD_REQUEST).into_response()
         }
     }
-
-
- 
-
-
 
     #[derive(Template)]
     #[template(path = "user_metadata.html")]

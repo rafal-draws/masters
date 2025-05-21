@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<std::io::Error>> {
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
 
-    println!("listening on {:?}", listener.local_addr().unwrap());
+    println!("listening on http://{:?}/", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
@@ -75,7 +75,7 @@ fn app() -> Router {
             "/classification/{upload_uuid}",
             post(send_to_classification),
         )
-        .route("/classify/{upload_uuid}", post(classify))
+        .route("/classify/{signal}", post(classify))
         .nest_service("/server_data", ServeDir::new("server_data"))
 }
 

@@ -310,13 +310,13 @@
           </div>
         </div>
         <div class="metadata-item">
-  <div class="metadata-label">Signal Data</div>
+  <div class="metadata-label">Classification</div>
 
         <div class="job-container" hx-target="this" hx-swap="outerHTML">
           <h3>Start Progress</h3>
           <button
             class="btn primary"
-            hx-post="/classify/{{ upload.upload_uuid }}"
+            hx-post="/classify/{{ signal_np }}"
             hx-target="closest .job-container"
             hx-swap="outerHTML"
           >
