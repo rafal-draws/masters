@@ -1,7 +1,7 @@
 pub mod ml {
-    use std::{collections::HashMap, env, path::PathBuf};
+    use std::{collections::{BTreeMap, HashMap}, env};
 
-    use askama::Template;
+    // use askama::Template;
     use axum::{
         extract::Path,
         response::{Html, IntoResponse},
@@ -9,11 +9,8 @@ pub mod ml {
     use serde::{Deserialize, Serialize};
     use tch::{CModule, Kind, Tensor};
 
-    use crate::db::db_conn::get_upload;
 
-    pub fn add(a: i32, b: i32) -> i32 {
-        a + b
-    }
+    
     pub fn load_model() -> CModule {
         use dotenv::dotenv;
         dotenv().ok();
@@ -34,12 +31,8 @@ pub mod ml {
     }
 
     pub async fn load_signal(signal_path: String) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
-    
-        tracing::info!(
-            "load_signal fun - looking at {}", &signal_path
-        );
+        tracing::info!("load_signal fun - looking at {}", &signal_path);
 
-        let dir = std::fs::read_dir(&signal_path);
 
         let bytes = std::fs::read(signal_path)?;
 
@@ -71,7 +64,7 @@ pub mod ml {
         tensors
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Clone)]
     pub struct FrameClassification {
         logits: Vec<f32>,
         propabilities: Vec<f32>,
@@ -79,8 +72,10 @@ pub mod ml {
         biggest_propability: f32,
     }
 
-    pub async fn classify_signal(model: CModule, path: String) -> HashMap<usize, FrameClassification> {
-
+    pub async fn classify_signal(
+        model: CModule,
+        path: String,
+    ) -> HashMap<usize, FrameClassification> {
         let signal = load_signal(path).await.expect("Should be valid signal");
 
         let tensors = signal_to_tensors(&signal);
@@ -137,7 +132,9 @@ pub mod ml {
 
     #[tokio::test]
     async fn test_load_signal() {
-        let signal = load_signal("./util/test_signal.npy".to_string()).await.expect("should work");
+        let signal = load_signal("./util/test_signal.npy".to_string())
+            .await
+            .expect("should work");
 
         assert_eq!(signal.len(), 308700)
     }
@@ -149,7 +146,6 @@ pub mod ml {
     // }
 
     pub async fn classify(Path(signal): Path<String>) -> impl IntoResponse {
-        // GET /server_data/transformed_signals/614e96f3-d91b-4734-b3b7-91f7cbc5f764-001018.npy
 
         let model = load_model();
 
@@ -171,18 +167,125 @@ pub mod ml {
                 "transformed_signals",
                 signal
             ),
-        ).await;
+        )
+        .await;
 
-        // read one frame
-        // classify
-        // print the class
+        let mut class_0_prop: f32 = 0.0;
+        let mut class_0_median: Vec<f32> = Vec::new();
+
+        let mut class_1_prop: f32 = 0.0;
+        let mut class_1_median: Vec<f32> = Vec::new();
+
+        let mut class_2_prop: f32 = 0.0;
+        let mut class_2_median: Vec<f32> = Vec::new();
+        
+        let mut class_3_prop: f32 = 0.0;
+        let mut class_3_median: Vec<f32> = Vec::new();
+
+        let mut class_4_prop: f32 = 0.0;
+        let mut class_4_median: Vec<f32> = Vec::new();
+
+        let mut frame_classes = BTreeMap::new();
+
+        let mut classifications_count: HashMap<usize, u8> = HashMap::new();
+
+        let classifications_copy = classifications.clone();
+
+
+
+        for (key, val) in classifications_copy.iter() {
+            match val.class {
+                0 => {
+                    class_0_prop += val.biggest_propability;
+                    class_0_median.push(val.biggest_propability);
+                    frame_classes.insert(key, val.class);
+                    classifications_count.entry(0).and_modify(|e| *e += 1).or_insert(0);
+                }
+                1 => {
+                    class_1_prop += val.biggest_propability;
+                    class_1_median.push(val.biggest_propability);
+                    frame_classes.insert(key, val.class);
+                    classifications_count.entry(1).and_modify(|e| *e += 1).or_insert(0);
+                }
+                2 => {
+                    class_2_prop += val.biggest_propability;
+                    class_2_median.push(val.biggest_propability);
+                    frame_classes.insert(key, val.class);
+                    classifications_count.entry(2).and_modify(|e| *e += 1).or_insert(0);
+                },
+                3 => {
+                    class_3_prop += val.biggest_propability;
+                    class_3_median.push(val.biggest_propability);
+                    frame_classes.insert(key, val.class);
+                    classifications_count.entry(3).and_modify(|e| *e += 1).or_insert(0);
+                },
+                4 => {
+                    class_4_prop += val.biggest_propability;
+                    class_4_median.push(val.biggest_propability);
+                    frame_classes.insert(key, val.class);
+                    classifications_count.entry(4).and_modify(|e| *e += 1).or_insert(0);
+                },
+                _ => tracing::info!(
+                    "Couldn't read biggest propability from classification for {}",
+                    &signal
+                ),
+            };
+        }
+
+        // let class_0_avg: f32 = class_0_prop / frame_classes.len() as f32;
+        // let class_1_avg: f32 = class_1_prop / frame_classes.len() as f32;
+        // let class_2_avg: f32 = class_2_prop / frame_classes.len() as f32;
+        // let class_3_avg: f32 = class_3_prop / frame_classes.len() as f32;
+        // let class_4_avg: f32 = class_4_prop / frame_classes.len() as f32;
+
+        let class_0_med_val = median(&mut class_0_median);
+        let class_1_med_val = median(&mut class_1_median);
+        let class_2_med_val = median(&mut class_2_median);
+        let class_3_med_val = median(&mut class_3_median);
+        let class_4_med_val = median(&mut class_4_median);
+        
 
         Html(format!(
-            r#"<div class="job-container" hx-target="this" hx-swap="outerHTML">Class: {:?}</div>"#,
-            classifications
+            r#"<div class="job-container" hx-target="this" hx-swap="outerHTML">
+            <div>Class "Rock"<br>median: {:?}<br>prop: {:?}</div>
+            <div>Class "Hip-Hop"<br>median: {:?}<br>prop: {:?}</div>
+            <div>Class "Electronic"<br>median: {:?}<br>prop: {:?}</div>
+            <div>Class "Pop"<br>median: {:?}<br>prop: {:?}</div>
+            <div>Class "Classical"<br>median: {:?}<br>prop: {:?}</div>
+
+
+
+            <div>Frame numbers and classifications <br> {:?} <br></div>
+            
+            <div>Classifications count <br> {:?} <br></div>
+            </div>"#,
+            class_0_med_val, class_0_prop,
+            class_1_med_val, class_1_prop,
+            class_2_med_val, class_2_prop,
+            class_3_med_val, class_3_prop,
+            class_4_med_val, class_4_prop,
+            frame_classes, classifications_count
         ))
     }
 
+
+    pub fn median(data: &mut Vec<f32>) -> Option<f32> {
+         let len = data.len();
+    if len == 0 {
+        return None;
+    }
+    
+    data.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    
+    let mid = len / 2;
+    if len % 2 == 0 {
+        Some((data[mid - 1] + data[mid]) / 2.0)
+    } else {
+        Some(data[mid])
+    }
+
+    }
+ 
     #[cfg(test)]
     mod tests {
 
@@ -190,7 +293,6 @@ pub mod ml {
 
         use tch::{CModule, Tensor};
 
-        use super::*;
 
         #[test]
         fn test_libtorch_works() {
@@ -218,9 +320,6 @@ pub mod ml {
             assert!(true)
         }
 
-        #[test]
-        fn test_add() {
-            assert_eq!(add(1, 2), 3)
-        }
+       
     }
 }
