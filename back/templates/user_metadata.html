@@ -21,10 +21,8 @@
     <table class="uploads-table">
         <thead class="uploads-table__head">
             <tr>
-                <th>Upload UUID</th>
                 <th>Added</th>
                 <th>File Name</th>
-                <th>Details</th>
                 <th>Delete</th>
                 <th>Send to classification</th>
             </tr>
@@ -32,14 +30,8 @@
         <tbody class="uploads-table__body">
             {% for upload in uploads %}
             <tr>
-                <td>{{ upload.upload_uuid | e }}</td>
                 <td>{{ upload.added | e }}</td>
                 <td>{{ upload.file_name | e }}</td>
-                <td>
-                    <a href="/track/{{ upload.upload_uuid }}">
-                        <button type="button" class="btn">Go to Track</button>
-                    </a>
-                </td>
                 <td>
                     <form action="/delete/{{ upload.upload_uuid }}" method="post" class="delete-form">
                         <input type="submit" value="Delete" class="btn btn--danger">

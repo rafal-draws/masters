@@ -13,32 +13,53 @@
 </head>
 
 <body>
-    <header class="navbar">
-        <div class="navbar-container">
-            <div class="navbar-logo">
-                <a href="/" class="logo-link">
-                    <img class="logo" src="/static/logo.png" alt="logo">
-                    <span class="logo-text">mlim</span>
-                </a>
+    <div class="layout-wrapper">
+        <header class="navbar">
+            <div class="navbar-container">
+                <div class="navbar-logo">
+                    <a href="/" class="logo-link">
+                        <img class="logo" src="/static/logo.png" alt="logo">
+                        <span class="logo-text">mlim</span>
+                    </a>
+                </div>
+
+                <nav class="navbar-menu">
+                    <label for="menu-toggle" class="navbar-toggle" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </label>
+
+                    <ul class="navbar-links">
+                        <li><label for="register-toggle" class="register-btn">Register</label></li>
+                        <li><a href="/user_terms">Terms</a></li>
+                        <li><a href="https://www.linkedin.com/in/rafa%C5%82-draws-a49b0b1a9/">Contact</a></li>
+                    </ul>
+                </nav>
             </div>
+        </header>
 
-            <nav class="navbar-menu">
-                <label for="menu-toggle" class="navbar-toggle" aria-label="Toggle menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </label>
+        <main id="content">
+            <div id="content">
+                {% block content %}<p>Placeholder content</p>{% endblock %}
+            </div>
+        </main>
 
-                <ul class="navbar-links">
-                    <li><label for="register-toggle" class="register-btn">Register</label></li>
-                    <li><a href="/user_terms">Terms</a></li>
-                    <li><a href="https://www.linkedin.com/in/rafa%C5%82-draws-a49b0b1a9/">Contact</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-    <div id="content">
-        {% block content %}<p>Placeholder content</p>{% endblock %}
+        <footer class="site-footer">
+            <div class="site-footer__container">
+                <div class="site-footer__logo">
+                    <a href="/" class="logo-link">
+                        <img src="/static/logo.png" alt="Logo" class="logo">
+                        <span>YourApp</span>
+                    </a>
+                </div>
+
+                <div class="site-footer__grid">
+                    <div class="footer-item">Column 1</div>
+
+                </div>
+            </div>
+        </footer>
     </div>
 </body>
 
