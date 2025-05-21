@@ -1,27 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Audio Classification Analysis</title>
-  <style>
+<style>
     /* Base styles and variables */
     :root {
       --color-primary: #5E5BFF;
       --color-primary-dark: #4744e6;
-      --color-secondary: #32325d;
+      --color-secondary: #ffffff;
       --color-accent: #6EE7B7;
       --color-success: #10B981;
       --color-warning: #FBBF24;
       --color-error: #EF4444;
-      --color-background: #F3F4F6;
-      --color-card: #FFFFFF;
-      --color-text: #1F2937;
-      --color-text-light: #6B7280;
+      --color-background: #121212;
+      --color-card: rgb(66, 66, 66);
+      --color-text: #ffffff;
+      --color-text-light: #ffffff;
       --color-border: #E5E7EB;
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
       --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -48,9 +42,10 @@
 
     /* Main content */
     main {
-      max-width: 1200px;
+      max-width: 100%;
       margin: 0 auto;
       padding: 2rem 1rem;
+      background-color: #121212;
     }
 
     .page-title {
@@ -58,6 +53,7 @@
       font-weight: 600;
       color: var(--color-secondary);
       margin-bottom: 1.5rem;
+      text-align: center;
     }
 
     /* Card styles */
@@ -71,7 +67,6 @@
     }
 
     .card:hover {
-      transform: translateY(-2px);
       box-shadow: var(--shadow-lg);
     }
 
@@ -101,14 +96,11 @@
     }
 
     .metadata-item {
+      margin-top: 1em;
       padding: 1rem;
-      background-color: rgba(243, 244, 246, 0.5);
+      background-color: rgba(32, 32, 32, 0.5);
       border-radius: var(--radius-sm);
       transition: background-color 0.2s ease;
-    }
-
-    .metadata-item:hover {
-      background-color: rgba(243, 244, 246, 0.8);
     }
 
     .metadata-label {
@@ -187,7 +179,7 @@
 
     /* Audio player */
     .audio-player {
-      background-color: #111827;
+      background-color: #131313;
       padding: 1.5rem;
       border-radius: var(--radius-md);
       margin-bottom: 2rem;
@@ -272,7 +264,8 @@
       display: block;
     }
   </style>
-</head>
+  <!DOCTYPE html>
+<html lang="en">
 
 <body>
   <!-- Main Content -->
@@ -296,14 +289,6 @@
       </div>
       <div class="card-body">
         <div class="metadata-grid">
-          <div class="metadata-item">
-            <div class="metadata-label">Upload UUID</div>
-            <div class="metadata-value">{{ upload.upload_uuid }}</div>
-          </div>
-          <div class="metadata-item">
-            <div class="metadata-label">User UUID</div>
-            <div class="metadata-value">{{ upload.user_uuid }}</div>
-          </div>
           <div class="metadata-item">
             <div class="metadata-label">Signal Data</div>
             <div class="metadata-value">{{ signal_np }}</div>

@@ -3,12 +3,12 @@
 {% block content %}
 
 <div id="user-metadata" class="user-metadata">
-    <h3 class="user-metadata__greeting">Hey {{ username }}!</h3>
+    <h3 class="user-metadata__greeting">Hey {{ username }}</h3>
     
     <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
         <div class="upload-form__group">
             <label class="upload-form__label">
-                Upload your tune!:
+                Upload your tune!
                 <input type="file" name="file" multiple class="upload-form__file-input">
             </label>
         </div>
