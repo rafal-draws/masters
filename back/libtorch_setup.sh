@@ -1,10 +1,12 @@
-#!/bin/bash
+
 
 set -x
 
-wget -q -P /home/$USER/libtorch https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.7.0%2Bcpu.zip
+#wget -P /home/$USER/libtorch https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.7.0%2Bcpu.zip
 
-cd ~/home/$USER/libtorch && ls -A | grep libtorch | xargs unzip 
+wget -P /home/$USER/libtorch https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.7.0%2Bcpu.zip
+
+cd /home/$USER/libtorch && ls -A | grep libtorch | xargs unzip 
 
 sleep 2
 

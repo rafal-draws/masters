@@ -21,10 +21,10 @@ pub mod ml {
         let model_location = "./util".to_string();
         let model_name = "jit_cpu_latest.pt".to_string();
 
-        tracing::info!("MODEL FOUND - {}\\{}", model_location, model_name);
-        println!("MODEL FOUND - {}\\{}", &model_location, &model_name);
+        tracing::info!("MODEL FOUND - {}/{}", model_location, model_name);
+        println!("MODEL FOUND - {}/{}", &model_location, &model_name);
 
-        let model = CModule::load(format!("{}\\{}", model_location, model_name))
+        let model = CModule::load(format!("{}/{}", model_location, model_name))
             .expect("model should be loadable");
 
         model
