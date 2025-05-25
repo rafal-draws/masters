@@ -232,11 +232,16 @@ pub mod ml {
             };
         }
 
-        // let class_0_avg: f32 = class_0_prop / frame_classes.len() as f32;
-        // let class_1_avg: f32 = class_1_prop / frame_classes.len() as f32;
-        // let class_2_avg: f32 = class_2_prop / frame_classes.len() as f32;
-        // let class_3_avg: f32 = class_3_prop / frame_classes.len() as f32;
-        // let class_4_avg: f32 = class_4_prop / frame_classes.len() as f32;
+
+        let classes: Vec<String> = classifications_count.clone().iter().map(|k| {
+            match k.0 {
+                0 => format!("Rock: {}%", k.1 / classifications_count.len() as u8),
+                1 => format!("Hip-Hop: {}", k.1 / classifications_count.len() as u8),
+                2 => format!("Electronic: {}", k.1 / classifications_count.len() as u8),
+                3 => format!("Pop: {}", k.1 / classifications_count.len() as u8),
+                _ => format!("Classical: {}", k.1 / classifications_count.len() as u8),
+                }
+        }).collect();
 
         let class_0_med_val = median(&mut class_0_median);
         let class_1_med_val = median(&mut class_1_median);
@@ -257,14 +262,14 @@ pub mod ml {
 
             <div>Frame numbers and classifications <br> {:?} <br></div>
             
-            <div>Classifications count <br> {:?} <br></div>
+            <div>Classifications: <br> {:?} <br></div>
             </div>"#,
             class_0_med_val, class_0_prop,
             class_1_med_val, class_1_prop,
             class_2_med_val, class_2_prop,
             class_3_med_val, class_3_prop,
             class_4_med_val, class_4_prop,
-            frame_classes, classifications_count
+            frame_classes, classes
         ))
     }
 

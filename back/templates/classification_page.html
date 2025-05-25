@@ -298,14 +298,13 @@
   <div class="metadata-label">Classification</div>
 
         <div class="job-container" hx-target="this" hx-swap="outerHTML">
-          <h3>Start Progress</h3>
           <button
             class="btn primary"
             hx-post="/classify/{{ signal_np }}"
             hx-target="closest .job-container"
             hx-swap="outerHTML"
           >
-            Start Job
+            Classify the signal
           </button>
         </div>
       </div>    
