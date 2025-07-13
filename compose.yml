@@ -28,14 +28,18 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - /home/rwd/dev/server_data:/server_data
-      - /home/rwd/metadata:/metadata
+      - /mnt/host/e/server_data:/server_data
+      - /mnt/host/e/train_metadata:/metadata
     depends_on:
       - redis
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
+
+
+  backend-web:
+    image
     
 networks:
   db:

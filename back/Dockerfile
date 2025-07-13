@@ -11,12 +11,11 @@ RUN dos2unix libtorch_setup.sh
 RUN bash ./libtorch_setup.sh
 
 ENV LIBTORCH=/home/util/libtorch/libtorch
+ENV LIBTORCH_INCLUDE=$LIBTORCH
+ENV LIBTORCH_LIB=$LIBTORCH
+ENV LD_LIBRARY_PATH=$LIBTORCH/lib:/usr/local/lib:/usr/lib
 
-ENV LIBTORCH_INCLUDE=/home/util/libtorch/libtorch
-
-ENV LIBTORCH_LIB=/home/util/libtorch/libtorch
-
-ENV LD_LIBRARY_PATH=/home/util/libtorch/libtorch/lib:$LD_LIBRARY_PATH
+ENV DATABASE_URL=postgres://psqlx:psqlx@host.docker.internal:5432/uploads
 
 RUN cargo install sqlx-cli
 
