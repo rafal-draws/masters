@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}
+Track classification!
+{% endblock %}
+
+{% block content %}
+
+<body>
+
+
+    <div>
+        <h2>Classification Results</h2>
+        <h5>{{ upload_name }}</h5>
+
+        <h1>Your track was classified as: {{ song_classification_result.major_class }}</h1>
+        <div>
+            <span>
+                total classification per genre:
+            </span>
+            <table>
+                <tr>
+                    <th>Rock</th>
+                    <th>Hip-Hop</th>
+                    <th>Electronic</th>
+                    <th>Pop</th>
+                    <th>Classical</th>
+                </tr>
+                <tr>
+                {% for value in cum_class %} 
+                    <td> {{ value | e }} </td>
+                {% endfor %} 
+                </tr>
+            </table>
+        </div>
+
+        <h2>This was composed by following classifications:</h2>
+        <table>
+            <tr>
+                <th>Feature Name</th>
+                <th>Feature weight</th>
+                <th>Rock</th>
+                <th>Hip-Hop</th>
+                <th>Electronic</th>
+                <th>Pop</th>
+                <th>Classical</th>
+            </tr>
+            {% for feature_classification in song_classification_result.feature_classification_result %}
+                <tr>
+                    <td>{{ feature_classification.feature }}</td>
+                    <td>{{ feature_classification.feature_weight }}</td>
+                    {% for classification in feature_classification.weighted_avg_classification_string %}
+                        <td><b>{{ classification }}</b></td>
+                    {% endfor %}
+
+                </tr>
+                <tr>
+                    <td colspan="2" style="color: grey">propabilities unweighted</td>
+                    {% for classification in feature_classification.avg_classification_string %}
+                        <td style="color: grey">{{ classification }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+
+        </table>
+    </div>
+
+
+
+    {% for feature in features %}
+        <h1>{{ feature.name }}</h1>
+
+        <video width="320" height="240" controls>
+            <source src="/server_data/{{feature.folder}}/{{upload_name}}/video/{{upload_name}}.mp4" type="video/mp4">
+            <source src="movie.ogg" type="video/ogg">
+            Your browser does not support the video tag.
+          </video> 
+        
+        <p>
+            {{ feature.short_desc | safe }}
+        </p>
+
+    {% endfor %}
+
+
+
+
+    <a href="/profile">← Return to dashboard</a>
+
+</body>
+{% endblock %}

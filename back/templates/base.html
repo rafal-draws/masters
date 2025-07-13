@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg" />
+    <title>MLIM | {% block title %} placeholder title {% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/stylesheet.css" />
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+    <div class="layout-wrapper">
+        <header class="navbar">
+            <div class="navbar-container">
+                <div class="navbar-logo">
+                    <a href="/" class="logo-link">
+                        <img class="logo" src="/static/logo.png" alt="logo">
+                        <span class="logo-text">chrust</spadn>
+                    </a>
+                </div>
+
+                <nav class="navbar-menu">
+                    <label for="menu-toggle" class="navbar-toggle" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </label>
+
+                    <ul class="navbar-links">
+                        <li><a href="/user_terms">Terms of use</a></li>
+                        <li><a href="https://www.linkedin.com/in/rafa%C5%82-draws-a49b0b1a9/">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <main id="content">
+            <div id="content">
+                {% block content %}<p>Placeholder content</p>{% endblock %}
+            </div>
+        </main>
+
+        <footer class="site-footer">
+            <div class="site-footer__container">
+                <div class="site-footer__logo">
+                    <a href="/" class="logo-link">
+                        <img src="/static/logo.png" alt="Logo" class="logo">
+                        <span>chrust</span>
+                    </a>
+                </div>
+
+                <div class="site-footer__grid">
+                    <div class="footer-item">Github</div>
+
+                    
+                <div class="site-footer__grid">
+                    <div class="footer-item">Terms</div>
+
+                
+                <div class="site-footer__grid">
+                    <div class="footer-item">Contact</div>
+
+
+
+                
+
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,34 @@
+
+ 
+
+{% extends "base.html" %}
+
+{% block title %}
+About the system
+{% endblock %}
+
+{% block content %}
+<section>
+    This system came into existence during the work on my Master Thesis, entilted “Applience of Machine Learning for education on Machine Learning Genre Classification”. Together with Ms. Elżbieta Zamiar, phd., we established that to educate, user should understand what processes took place in order to provide the music genre classification.
+
+    Experimentation that happened in the span of 2024Q4-2025Q2 can be found in my chrust repository. You will find the notebooks and pa, production-ready scripts with logging and artifacts generation. Find more information under github com rafal-draws chrust-experimentation.
+    
+    To enable data extraction in relatively short period of time, ETL backend was developed to enable end to end transformation and to separate the workload from Rust backend. Due to resource limitations and scientific aspect of this product, I’ve enabled progress lookup for every specific transformation, which is available in user profile dashboard.
+    
+    The heart of this system is previously mentioned Rust backend. Everything that you see is rendered with Askama templating engine, which minimizes client-side rendering. All of the models that were trained and tested during experimentation phase of this project are available to Chrust system via tch-rs library, Rust bindings for the C++ api of PyTorch.
+    Furthermore, to enable session persistence and to provide song-user relations, I leveraged axum web framework with postgres as a database of choice. (which, according to https://www.techempower.com/benchmarks/ provide data)
+    
+    
+    All data used for training was provided by Free Music Archive. The dataset consisting of 343 days of non stop music audio signal, 161 genres, approximately 56 thousand labeled tracks, and everything copyrighted as Creative Commons license.
+    
+    Chrust artwork (logo, animation and icons) was created and provided by Kasper Nierzwicki.
+    Reach out to him via
+    
+    kasper@nierzwicki.pl
+    
+    or via linkedin
+    linkedin.com/kasper nierzwicki
+        
+
+</section>
+{% endblock %}

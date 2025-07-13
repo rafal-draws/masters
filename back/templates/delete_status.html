@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}
+Deletion success
+{% endblock %}
+
+{% block content %}
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            margin: 5em;
+        }
+
+        .status-box {
+            padding: 1.5rem;
+            border-radius: 8px;
+            max-width: 600px;
+        }
+
+        .success {
+            background-color: #000000;
+            border: 2px solid #4CAF50;
+            color: #2e7d32;
+        }
+
+        .error {
+            background-color: #000000;
+            border: 2px solid #f44336;
+            color: #c62828;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #1976d2;
+            text-decoration: none;
+        }
+
+        
+    </style>
+<body>
+
+    {% if status %}
+    <div class="status-box success">
+        <h1>✅ Record Deleted</h1>
+        <p><strong>Upload UUID:</strong> {{ upload_uuid | e }}</p>
+        <p><strong>User UUID:</strong> {{ user_uuid | e }}</p>
+        <p>The upload has been successfully deleted.</p>
+    </div>
+    {% else %}
+    <div class="status-box error">
+        <h1>❌ Deletion Failed</h1>
+        <p><strong>Upload UUID:</strong> {{ upload_uuid | e }}</p>
+        <p><strong>User UUID:</strong> {{ user_uuid | e }}</p>
+        <p>We couldn't delete the upload. Please try again or contact support.</p>
+    </div>
+    {% endif %}
+
+    <a href="/profile">← Return to dashboard</a>
+
+</body>
+{% endblock %}

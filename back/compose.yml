@@ -1,0 +1,18 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: psqlx
+      POSTGRES_PASSWORD: psqlx
+      PGDATA: /data/postgres
+      POSTGRES_DB: uploads
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+networks:
+  db:
+    driver: bridge
+
+
+# sudo docker exec -it <id> psql  -U psqlx -d uploads

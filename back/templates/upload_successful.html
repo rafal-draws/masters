@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+Success
+{% endblock %}
+
+{% block content %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+        }
+
+        .success-box {
+            border: 2px solid #4CAF50;
+            background-color: #000000;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            color: #6cc771;
+            max-width: 600px;
+        }
+
+        .success-box h1 {
+            color: #1ab824;
+        }
+
+        .file-info {
+            margin-top: 1rem;
+        }
+
+        .file-info p {
+            margin: 0.3rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-box">
+        <h1>✅ Upload Successful</h1>
+        <div class="file-info">
+            <p><strong>File Name:</strong> {{ title | e }}</p>
+            <p><strong>Upload UUID:</strong> {{ upload_uuid | e }}</p>
+            <p><strong>File Size:</strong> {{ bytes }} bytes</p>
+        </div>
+        <p>You can now return to <a href="/profile">your dashboard</a>.</p>
+    </div>
+</body>
+
+{% endblock %}

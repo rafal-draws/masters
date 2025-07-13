@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}{{ username }} profile {% endblock %}
+
+
+{% block content %}
+
+<div id="user-metadata" class="user-metadata">
+    <h3 class="user-metadata__greeting">Hey {{ username }}</h3>
+    
+    <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+        <div class="upload-form__group">
+            <label class="upload-form__label">
+                Upload your tune!
+                <input type="file" name="file" multiple class="upload-form__file-input">
+            </label>
+        </div>
+
+        <div class="upload-form__group">
+            <input type="submit" value="Upload files" class="upload-form__submit-btn">
+        </div>
+    </form>
+
+    <table class="uploads-table">
+        <thead class="uploads-table__head">
+            <tr>
+                <th>Added</th>
+                <th>File Name</th>
+                <th>Delete</th>
+                <th>Transformation</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody class="uploads-table__body">
+            {% for upload in uploads %}
+            <tr>
+                <td>{{ upload.added | e }}</td>
+                <td>{{ upload.file_name | e }}</td>
+                <td>
+                    <form action="/delete/{{ upload.upload_uuid }}" method="post" class="delete-form">
+                        <input type="submit" value="Delete" class="btn btn--danger">
+                    </form>
+                </td>
+                <td>
+                    <button
+                        class="transform-btn"
+                        id="begin-button"
+                        data-uuid="{{ upload.upload_uuid }}"
+                        data-filename="{{ upload.file_name }}">
+                        Begin Transformation!
+                    </button>
+                </td>
+                <td>
+                    <div class="status" 
+                         id="status-{{ upload.upload_uuid }}" 
+                         data-uuid="{{ upload.upload_uuid }}" 
+                         data-filename="{{ upload.file_name }}">
+                        Status: pending
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const buttons = document.querySelectorAll(".transform-btn");
+
+    buttons.forEach(button => {
+        button.addEventListener("click", () => {
+            const uuid = button.dataset.uuid;
+            const filename = button.dataset.filename;
+            const trackId = `${uuid}-${filename}`;
+            const transformUrl = `http://localhost:8888/transform/${trackId}`;
+            const statusDiv = document.getElementById(`status-${uuid}`);
+
+            // Start the transformation (fire-and-forget)
+            fetch(transformUrl).catch(err => {
+                console.error("Transform request failed:", err);
+            });
+
+            // Disable button while transforming
+            button.disabled = true;
+            button.innerText = "Transforming...";
+
+            // Start polling for status
+            startStatusPolling(trackId, statusDiv);
+        });
+    });
+
+    // Automatically start polling for all existing uploads
+    const statusDivs = document.querySelectorAll(".status");
+    statusDivs.forEach(div => {
+        const uuid = div.dataset.uuid;
+        const filename = div.dataset.filename;
+        const trackId = `${uuid}-${filename}`;
+        startStatusPolling(trackId, div);
+    });
+
+    function startStatusPolling(trackId, statusDiv) {
+    const beginButton = document.getElementById("begin-button"); // Adjust the ID if needed
+
+    const intervalId = setInterval(() => {
+        fetch(`http://localhost:8888/status/${trackId}`)
+            .then(res => res.text())
+            .then(statusText => {
+                if (statusText.includes("Explore the results")) {
+                    statusDiv.innerHTML = statusText;
+                    if (beginButton) {
+                        beginButton.disabled = true; // ✅ Disable the button
+                        beginButton.textContent = "Processing complete"; // Optional
+                    }
+                    clearInterval(intervalId);
+                } else if (statusText.includes("%")) {
+                    statusDiv.innerText = `Status: ${statusText}`;
+                } else {
+                    statusDiv.innerText = `Status: ${statusText}`;
+                }
+            })
+            .catch(err => {
+                console.error("Status check failed:", err);
+                clearInterval(intervalId); // Optional
+            });
+    }, 2000);
+}
+});
+</script>
+
+
+{% endblock %}
