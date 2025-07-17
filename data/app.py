@@ -20,6 +20,12 @@ r = redis.Redis(host="redis", port=6379, decode_responses=True)
 server_data = os.path.join("/server_data")
 metadata = os.path.join("/metadata")
 
+os.mkdir(os.path.join(server_data, "uploads"))
+
+os.system("sh download_utils.sh")
+
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler.start()

@@ -4,7 +4,7 @@ WORKDIR /usr/src/myapp
 
 COPY . .
 
-RUN apt-get update && apt-get install -y dos2unix 
+RUN apt-get update && apt-get install -y dos2unix gdown 
 
 RUN dos2unix libtorch_setup.sh
 

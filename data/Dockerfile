@@ -10,6 +10,7 @@ COPY . .
 
 RUN apt update
 
-RUN  apt install -y ffmpeg
+RUN apt install -y ffmpeg
+
 
 CMD ["fastapi", "run", "app.py", "--port", "8888"]

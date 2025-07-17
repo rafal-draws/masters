@@ -2,6 +2,9 @@
 
 This repository contains two major components housed in `/back` and `/data`, each containerized for portability and ease of deployment.
 
+
+#### To make the directories for windows + wsl or linux for appropriate paths in compose, take a look at dev.sh and compose.yml and adapt paths
+
 ---
 
 ## Table of Contents
