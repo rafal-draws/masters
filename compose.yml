@@ -36,6 +36,9 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
+    restart: unless-stopped
+
+
 
     
 networks:

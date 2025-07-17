@@ -1,4 +1,5 @@
 #!/bin/sh 
 
 cd /metadata 
-gdown https://drive.google.com/file/d/19eOZCyZpbF9NPtIqJxKsEB4440p9Fm7y
+gdown --fuzzy https://drive.google.com/file/d/1gsGht48Jc2h6zIRygEXqr67ceeDobpIh/view?usp=sharing
+unzip models_and_metadata.zip
